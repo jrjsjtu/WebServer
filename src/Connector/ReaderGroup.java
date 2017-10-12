@@ -7,19 +7,24 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by jrj on 17-10-10.
  */
 public class ReaderGroup {
-    SingleReader[] Readers;
+    SingleReader[] readers;
     AtomicInteger integer;
     int num;
     ReaderGroup(int num){
         integer = new AtomicInteger(0);
-        Readers = new SingleReader[num];
+        readers = new SingleReader[num];
+        for (int i=0;i<num;i++){
+            readers[i] = new SingleReader();
+        }
         this.num = num;
     }
 
     public void register(SocketChannel channel){
-        findNextReader().register(channel);
+        SingleReader singleReader = findNextReader();
+        singleReader.execute(()->singleReader.register(channel));
     }
+
     private SingleReader findNextReader(){
-        return Readers[integer.getAndIncrement()%num];
+        return readers[integer.getAndIncrement()%num];
     }
 }

@@ -1,5 +1,6 @@
 package Connector;
 
+import com.sun.corba.se.spi.activation.Server;
 import containers.Context;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ public class ConnectionAccptor implements Runnable{
     private Selector selector;
     private Context context;
     private ReaderGroup readerGroup;
-    ConnectionAccptor(int port,Context context){
+    public ConnectionAccptor(int port,Context context){
         try {
             this.context = context;
             selector =  SelectorProvider.provider().openSelector();
@@ -43,8 +44,8 @@ public class ConnectionAccptor implements Runnable{
                         SelectionKey key = (SelectionKey) selectorKeys.next();
                         selectorKeys.remove();
                         if (key.isAcceptable()) {
-                            SocketChannel channel = (SocketChannel) key.channel();
-                            readerGroup.register(channel);
+                            ServerSocketChannel channel = (ServerSocketChannel) key.channel();
+                            readerGroup.register(channel.accept());
                         } else{
                             throw new Exception("Error! A none acceptable key accepted");
                         }
