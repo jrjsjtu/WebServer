@@ -1,5 +1,7 @@
 package Connector;
 
+import containers.Context;
+
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -9,12 +11,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ReaderGroup {
     SingleReader[] readers;
     AtomicInteger integer;
+    Context context;
     int num;
-    ReaderGroup(int num){
+    ReaderGroup(int num,Context context){
         integer = new AtomicInteger(0);
         readers = new SingleReader[num];
+        this.context =context;
         for (int i=0;i<num;i++){
-            readers[i] = new SingleReader();
+            readers[i] = new SingleReader(context);
         }
         this.num = num;
     }

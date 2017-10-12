@@ -1,8 +1,11 @@
 package Connector;
 
+import containers.Context;
 import request.NioServletRequest;
+import response.NioServletResponse;
 
 import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponseWrapper;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
@@ -25,8 +28,10 @@ public class SingleReader implements Runnable{
     Selector selector;
     LinkedBlockingQueue<Runnable> taskQueue;
     Thread currentThread;
-    SingleReader(){
+    Context context;
+    SingleReader(Context context){
         try {
+            this.context = context;
             selector = SelectorProvider.provider().openSelector();
             taskQueue = new LinkedBlockingQueue<>();
             status = 0;
@@ -83,6 +88,8 @@ public class SingleReader implements Runnable{
                                 continue;
                             }
                             if (servletRequest.isFinished()){
+                                context.invoke(servletRequest,new NioServletResponse(channel));
+                                //这里要是没有keepAlive就可以直接不attach新的request？
                                 key.attach(new NioServletRequest());
                                 System.out.println(servletRequest.getRequestURI());
                                 //这里表示servletRequest构造完成，与Response一起放人contenxt，完成连接器的职责

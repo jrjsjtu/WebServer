@@ -28,7 +28,7 @@ public class ConnectionAccptor implements Runnable{
             serverSocketChannel.configureBlocking(false);
             serverSocketChannel.socket().bind(new InetSocketAddress("localhost", port));
             serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-            readerGroup = new ReaderGroup(4);
+            readerGroup = new ReaderGroup(4,context);
         } catch (IOException e) {
             e.printStackTrace();
         }
