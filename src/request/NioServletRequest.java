@@ -23,7 +23,7 @@ public class NioServletRequest implements HttpServletRequest {
     ByteBuffer byteBuffer;
     HashMap<String,String[]> parameterMap;
     Cookie[] cookies;
-    String requestPath;
+    String requestURI;
     String method;
     public NioServletRequest(){
         //一开始分配512B，到了后来再根据contentLength来分配
@@ -61,7 +61,7 @@ public class NioServletRequest implements HttpServletRequest {
                             if(spaceNum ==1){
                                 method = new String(arrays,start,i);
                             }else if(spaceNum ==2){
-                                requestPath = new String(arrays,start,i-start);
+                                requestURI = new String(arrays,start,i-start);
                                 break;
                             }
                             start = i+1;
@@ -334,7 +334,7 @@ public class NioServletRequest implements HttpServletRequest {
 
     @Override
     public String getMethod() {
-        return null;
+        return method;
     }
 
     @Override
@@ -379,7 +379,7 @@ public class NioServletRequest implements HttpServletRequest {
 
     @Override
     public String getRequestURI() {
-        return null;
+        return requestURI;
     }
 
     @Override
