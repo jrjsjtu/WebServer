@@ -15,9 +15,10 @@ import java.util.Locale;
  */
 public class NioServletResponse implements HttpServletResponse {
     SocketChannel channel;
-
+    PrintWriter printWriter;
     public NioServletResponse(SocketChannel channel){
         this.channel = channel;
+        printWriter = new PrintWriter(new HttpOutputStream(channel));
     }
 
     public void flushBuffer(ByteBuffer byteBuffer){
@@ -159,6 +160,7 @@ public class NioServletResponse implements HttpServletResponse {
 
     @Override
     public PrintWriter getWriter() throws IOException {
+
         return null;
     }
 

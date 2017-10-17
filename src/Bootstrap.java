@@ -1,5 +1,5 @@
 import Connector.ConnectionAccptor;
-import containers.ContextWrapper;
+import containers.StandardContext;
 
 /**
  * Created by jrj on 17-10-12.
@@ -7,6 +7,6 @@ import containers.ContextWrapper;
 public class Bootstrap {
     public static void main(String[] args){
         int port = 10103;
-        new ConnectionAccptor(10103,new ContextWrapper()).run();
+        new ConnectionAccptor(10103,new StandardContext()).run();
     }
 }
