@@ -1,7 +1,9 @@
 package containers;
 
+import loader.WebappClassLoader;
 import response.NioServletResponse;
 
+import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -18,11 +20,25 @@ import java.util.Locale;
 public class StandardContext implements Context{
     private static final Calendar cal = Calendar.getInstance();
     private static final SimpleDateFormat greenwichDate = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+    private ClassLoader classLoader;
+    private UrlServletMap urlServletMap;
     String resourcePath;
     public StandardContext(){
         resourcePath = System.getProperty("user.dir")+"/web/";
+        classLoader = new WebappClassLoader();
+        urlServletMap = new UrlServletMap(classLoader);
     }
     @Override
     public void invoke(ServletRequest request, ServletResponse response) {
+        if (request instanceof HttpServletRequest){
+            HttpServletRequest httpServletRequest = (HttpServletRequest)request;
+            try {
+                urlServletMap.getServlet(httpServletRequest.getRequestURI()).service(request,response);
+            } catch (ServletException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

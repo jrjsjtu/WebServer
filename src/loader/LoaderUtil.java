@@ -1,9 +1,6 @@
 package loader;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.jar.JarEntry;
@@ -14,7 +11,7 @@ import java.util.zip.ZipEntry;
  * Created by jrj on 17-10-17.
  */
 public class LoaderUtil {
-    static void initClassMap(HashMap classMap,String path){
+    static void initJarMap(HashMap classMap,String path){
         File[] files = new File(path).listFiles();
         for (File f : files) {
             if (f.isFile() && f.getName().endsWith(".jar"))
@@ -25,7 +22,6 @@ public class LoaderUtil {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            System.out.println(f.getName());
         }
     }
 
@@ -57,8 +53,34 @@ public class LoaderUtil {
         return null;
     }
 
+    static byte[] GetByteArray(File file){
+        try {
+            InputStream in = new FileInputStream(file);
+            int size = (int)file.length();
+            byte[] result = new byte[size];
+            int curPosition = 0;
+            while (curPosition!=size){
+                curPosition += in.read(result,curPosition,size-curPosition);
+            }
+            return result;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
     static String ConvertURL(String name){
         String pathName = name.replace('.','/');
         return pathName.endsWith(".class")?pathName:(pathName+".class");
+    }
+
+    static String ConvertURLForClass(String name){
+        if (name.endsWith(".class")){
+            return name;
+        }else{
+            String pathName = name.replace('.','/');
+            return pathName+".class";
+        }
     }
 }
