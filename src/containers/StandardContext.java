@@ -6,6 +6,7 @@ import response.NioServletResponse;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +34,9 @@ public class StandardContext implements Context{
         if (request instanceof HttpServletRequest){
             HttpServletRequest httpServletRequest = (HttpServletRequest)request;
             try {
-                urlServletMap.getServlet(httpServletRequest.getRequestURI()).service(request,response);
+                HttpServlet httpServlet = urlServletMap.getServlet(httpServletRequest.getRequestURI());
+                httpServlet.service(request,response);
+                response.flushBuffer();
             } catch (ServletException e) {
                 e.printStackTrace();
             } catch (IOException e) {

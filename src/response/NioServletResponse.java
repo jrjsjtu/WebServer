@@ -16,20 +16,21 @@ import java.util.Locale;
 public class NioServletResponse implements HttpServletResponse {
     SocketChannel channel;
     PrintWriter printWriter;
+    HttpOutputStream httpOutputStream;
+    File fileToResponse;
+    StringBuilder stringBuilder;
+    private int status;
+    private static final String Ok200String = "HTTP/1.1 200 OK\r\n";
     public NioServletResponse(SocketChannel channel){
         this.channel = channel;
-        printWriter = new PrintWriter(new HttpOutputStream(channel));
+        this.httpOutputStream = new HttpOutputStream(channel);
+        stringBuilder = new StringBuilder();
+        printWriter = new HttpPrintWriter(this.httpOutputStream);
     }
 
-    public void flushBuffer(ByteBuffer byteBuffer){
-        try {
-            byteBuffer.flip();
-            channel.write(byteBuffer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void addFileToFlush(File fileToResponse){
+        this.fileToResponse = fileToResponse;
     }
-
     public void flushFile(File file){
         try {
             FileChannel in1 = new FileInputStream(file).getChannel();
@@ -95,7 +96,7 @@ public class NioServletResponse implements HttpServletResponse {
 
     @Override
     public void setHeader(String s, String s1) {
-
+        stringBuilder.append(s);stringBuilder.append(s1);
     }
 
     @Override
@@ -115,7 +116,7 @@ public class NioServletResponse implements HttpServletResponse {
 
     @Override
     public void setStatus(int i) {
-
+        status = i;
     }
 
     @Override
@@ -155,13 +156,12 @@ public class NioServletResponse implements HttpServletResponse {
 
     @Override
     public ServletOutputStream getOutputStream() throws IOException {
-        return null;
+        return httpOutputStream;
     }
 
     @Override
     public PrintWriter getWriter() throws IOException {
-
-        return null;
+        return printWriter;
     }
 
     @Override
@@ -193,10 +193,26 @@ public class NioServletResponse implements HttpServletResponse {
     public int getBufferSize() {
         return 0;
     }
-
+    private static final String ContentLength = "Content-Length:";
     @Override
     public void flushBuffer() throws IOException {
-
+        if(status > -100){
+            httpOutputStream.writeHeader(Ok200String);
+            httpOutputStream.writeHeader(stringBuilder.toString());
+            if (fileToResponse !=null){
+                httpOutputStream.writeHeader("\r\n");
+                httpOutputStream.flush();
+                if (fileToResponse != null){
+                    flushFile(fileToResponse);
+                }
+            }else{
+                int length  = httpOutputStream.getLength();
+                httpOutputStream.writeHeader(ContentLength+length + "\r\n");
+                httpOutputStream.writeHeader("Content-Type: "+"text/html; charset=utf-8\r\n");
+                httpOutputStream.writeHeader("\r\n");
+                httpOutputStream.flush();
+            }
+        }
     }
 
     @Override

@@ -20,10 +20,11 @@ import java.util.Locale;
 public class DefaultServlet extends HttpServlet {
     static String resourcePath;
     static {
-        resourcePath = System.getProperty("user.dir")+"/web/";
+        resourcePath = System.getProperty("user.dir")+"/webapps/u928/web";
     }
     private static final Calendar cal = Calendar.getInstance();
     private static final SimpleDateFormat greenwichDate = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+    /*
     private static final char[] Ok200String = "HTTP/1.1 200 OK\r\n".toCharArray();
     private static final char[] contentHTML= "Content-Type: text/html; charset=utf-8\r\n".toCharArray();
     private static final char[] contentCSS = "Content-Type: text/css; charset=utf-8\r\n".toCharArray();
@@ -33,40 +34,57 @@ public class DefaultServlet extends HttpServlet {
     private static final char[] endOfHeader = "\r\n".toCharArray();
     private static final char[] date = "Date: ".toCharArray();
     private static final char[] ContentLength = "Content-Length:".toCharArray();
+    */
+    private static final String contentHTML= "text/html; charset=utf-8\r\n";
+    private static final String contentCSS = "text/css; charset=utf-8\r\n";
+    private static final String contentJS= "application/javascript\r\n";
+    private static final String contentJSON = "application/json; charset=utf-8\r\n";
+    private static final String keepAlive = "keep-alive\r\n";
+    private static final String endOfHeader = "\r\n";
+    private static final String date = "Date: ";
+    private static final String ContentLength = "Content-Length:";
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         File file;
         String resourceName = req.getRequestURI();
         file = new File(resourcePath + resourceName);
+        resp.setStatus(200);
         if (file.exists()) {
-            PrintWriter printWriter = resp.getWriter();
-            printWriter.write(Ok200String);
+            //PrintWriter printWriter = resp.getWriter();
+            //printWriter.write(Ok200String);
             long size = file.length();
             switch (resourceName.charAt(resourceName.length() - 1)) {
                 case 'm':
-                    printWriter.write(contentHTML);
+                    resp.setHeader("Content-Type: ",contentHTML);
+                    //printWriter.write(contentHTML);
                     break;
                 case 's':
-                    printWriter.write(contentCSS);
+                    resp.setHeader("Content-Type: ",contentCSS);
+                    //printWriter.write(contentCSS);
                     break;
                 case 'j':
-                    printWriter.write(contentJS);
+                    resp.setHeader("Content-Type: ",contentJS);
+                    //printWriter.write(contentJS);
                     break;
                 default:
-                    printWriter.write(contentHTML);
+                    resp.setHeader("Content-Type: ",contentHTML);
+                    //printWriter.write(contentHTML);
                     break;
             }
-            printWriter.write(keepAlive);
-            printWriter.write(date);
-            printWriter.write(greenwichDate.format(cal.getTime()).toCharArray());
-            printWriter.write(endOfHeader);
-            printWriter.write(ContentLength);
-            printWriter.write((size + "").toCharArray());
-            printWriter.write(endOfHeader);
-            printWriter.write(endOfHeader);
-            printWriter.flush();
+            resp.setHeader("Connection: ",keepAlive);
+            //printWriter.write(keepAlive);
+            //printWriter.write(date);
+            resp.setHeader(date,greenwichDate.format(cal.getTime())+endOfHeader);
+            //printWriter.write(greenwichDate.format(cal.getTime()).toCharArray());
+            //printWriter.write(endOfHeader);
+            resp.setHeader(ContentLength,size+"\r\n");
+            //printWriter.write(ContentLength);
+            //printWriter.write((size + "").toCharArray());
+            //printWriter.write(endOfHeader);
+            //printWriter.write(endOfHeader);
+            //printWriter.flush();
             if (resp instanceof NioServletResponse){
-                ((NioServletResponse)resp).flushFile(file);
+                ((NioServletResponse)resp).addFileToFlush(file);
             }
         }
     }

@@ -1,5 +1,6 @@
 package containers;
 
+import Servlet.DefaultServlet;
 import loader.WebappClassLoader;
 
 import javax.servlet.annotation.WebServlet;
@@ -19,8 +20,10 @@ public class UrlServletMap {
     }
     ClassLoader webappClassLoader;
     HashMap<String,HttpServlet> internalMap;
+    DefaultServlet defaultServlet;
     UrlServletMap(ClassLoader webappClassLoader){
         this.webappClassLoader = webappClassLoader;
+        defaultServlet = new DefaultServlet();
         internalMap = new HashMap<>();
         File[] files = new File(resourcePath).listFiles();
         for (File f : files) {
@@ -44,7 +47,11 @@ public class UrlServletMap {
     }
 
     public HttpServlet getServlet(String url){
-        return internalMap.get(url);
+        if (internalMap.get(url) == null){
+            return defaultServlet;
+        }else{
+            return internalMap.get(url);
+        }
     }
 
     private void insertServletIntoMap(Class clazz){
