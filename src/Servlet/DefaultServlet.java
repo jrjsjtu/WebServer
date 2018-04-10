@@ -43,17 +43,22 @@ public class DefaultServlet extends HttpServlet {
     private static final String endOfHeader = "\r\n";
     private static final String date = "Date: ";
     private static final String ContentLength = "Content-Length:";
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        File file;
+        File file,fileWithView;
         String resourceName = req.getRequestURI();
         file = new File(resourcePath + resourceName);
+        //这里为了迎合hexo,其实做了很多,把所有默认路径映射到了/web/views路径下
+        //而且发现如果是目录,就默认导入到目录下的index.html文件上
+        fileWithView = new File(resourcePath + "/views"+ resourceName);
         resp.setStatus(200);
-        if (file.exists()) {
-            //PrintWriter printWriter = resp.getWriter();
-            //printWriter.write(Ok200String);
+        if (file.exists() || (file=fileWithView).exists() ) {
+            if(file.isDirectory()){
+                file = new File(resourcePath + "/views"+ resourceName + "/index.html");
+            }
             long size = file.length();
-            switch (resourceName.charAt(resourceName.length() - 1)) {
+            switch (file.getName().charAt(file.getName().length() - 1)) {
                 case 'm':
                     resp.setHeader("Content-Type: ",contentHTML);
                     //printWriter.write(contentHTML);
@@ -71,13 +76,13 @@ public class DefaultServlet extends HttpServlet {
                     //printWriter.write(contentHTML);
                     break;
             }
-            resp.setHeader("Connection: ",keepAlive);
             //printWriter.write(keepAlive);
             //printWriter.write(date);
             resp.setHeader(date,greenwichDate.format(cal.getTime())+endOfHeader);
             //printWriter.write(greenwichDate.format(cal.getTime()).toCharArray());
             //printWriter.write(endOfHeader);
             resp.setHeader(ContentLength,size+"\r\n");
+            resp.setHeader("Powered-by: ","JRJ\r\n");
             //printWriter.write(ContentLength);
             //printWriter.write((size + "").toCharArray());
             //printWriter.write(endOfHeader);
