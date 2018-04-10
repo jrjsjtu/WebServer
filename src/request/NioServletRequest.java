@@ -5,6 +5,7 @@ import javax.servlet.http.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.security.Principal;
 import java.util.*;
@@ -22,6 +23,7 @@ public class NioServletRequest implements HttpServletRequest {
     private int status;
     ByteBuffer byteBuffer;
     HashMap<String,String[]> parameterMap;
+    HashMap<String,String> headerMap;
     Cookie[] cookies;
     String requestURI;
     String method;
@@ -29,18 +31,23 @@ public class NioServletRequest implements HttpServletRequest {
         //一开始分配512B，到了后来再根据contentLength来分配
         status = PARSEURL;
         byteBuffer = ByteBuffer.allocate(512);
-        parameterMap = new HashMap<>();
+
+        headerMap = new HashMap<>();
     }
 
     public boolean isFinished(){
-        process(byteBuffer.array(),byteBuffer.position());
+        try{
+            process(byteBuffer.array(),byteBuffer.position());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         if (status == FINISH)
             return true;
         else
             return false;
     }
 
-    private void process(byte[] arrays,int length){
+    private void process(byte[] arrays,int length) throws Exception{
         if (status == CONTENTNOTFINISH){
             if (!byteBuffer.hasRemaining()){
                 status = FINISH;
@@ -62,6 +69,20 @@ public class NioServletRequest implements HttpServletRequest {
                                 method = new String(arrays,start,i);
                             }else if(spaceNum ==2){
                                 requestURI = new String(arrays,start,i-start);
+                                requestURI = URLDecoder.decode(requestURI,"UTF-8");
+                                int position = requestURI.indexOf('?');
+                                if(position>-1){
+                                    String parameter = requestURI.substring(position+1);
+                                    requestURI = requestURI.substring(0,position);
+                                    String[] paras = parameter.split("&");
+                                    parameterMap = new HashMap<>();
+                                    for(String para:paras){
+                                        int p = para.indexOf("=");
+                                        if(p>-1){
+                                            parameterMap.put(para.substring(0,p),new String[]{para.substring(p+1)});
+                                        }
+                                    }
+                                }
                                 break;
                             }
                             start = i+1;
@@ -71,12 +92,12 @@ public class NioServletRequest implements HttpServletRequest {
                     status = PARSEHEADER;
                 }else if(status == PARSEHEADER){
                     if (arrays[start]=='\r'){
-                        if (parameterMap.get("Content-Length")==null){
+                        if (headerMap.get("Content-Length")==null){
                             status = FINISH;
                             return;
                         }else{
                             status = CONTENTNOTFINISH;
-                            int size = Integer.parseInt(parameterMap.get("Content-Length")[0]);
+                            int size = Integer.parseInt(headerMap.get("Content-Length"));
                             byteBuffer = ByteBuffer.allocate(size);
                         }
                         break;
@@ -87,7 +108,7 @@ public class NioServletRequest implements HttpServletRequest {
                     }
                     String key = new String(arrays,start,i-start);
                     String value = new String(arrays,i+1,curPosition-i-2);
-                    parameterMap.put(key,new String[]{value});
+                    headerMap.put(key,value);
                     start = curPosition + 1;
                 }
             }
@@ -106,7 +127,11 @@ public class NioServletRequest implements HttpServletRequest {
                 "Accept-Encoding: gzip, deflate\r\n" +
                 "Content-Length:50\r\n" +
                 "\r";
-        nioServletRequest.process(headers.getBytes(),headers.length());
+        try{
+            nioServletRequest.process(headers.getBytes(),headers.length());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public ByteBuffer getBuffer(){
@@ -314,7 +339,7 @@ public class NioServletRequest implements HttpServletRequest {
 
     @Override
     public String getHeader(String s) {
-        return null;
+        return headerMap.get(s);
     }
 
     @Override

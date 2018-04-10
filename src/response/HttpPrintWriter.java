@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by jrj on 17-10-13.
@@ -28,6 +29,5 @@ public class HttpPrintWriter extends PrintWriter {
 
     @Override
     public void write(char[] str){
-
     }
 }
