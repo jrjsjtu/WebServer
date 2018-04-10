@@ -20,7 +20,7 @@ import java.util.Locale;
 public class DefaultServlet extends HttpServlet {
     static String resourcePath;
     static {
-        resourcePath = System.getProperty("user.dir")+"/webapps/u928/webtest";
+        resourcePath = System.getProperty("user.dir")+"/webapps/u928/web";
     }
     private static final Calendar cal = Calendar.getInstance();
     private static final SimpleDateFormat greenwichDate = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
