@@ -23,7 +23,12 @@ public class DefaultServlet extends HttpServlet {
         resourcePath = System.getProperty("user.dir")+"/webapps/u928/web";
     }
     private static final Calendar cal = Calendar.getInstance();
-    private static final SimpleDateFormat greenwichDate = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+    //private static final SimpleDateFormat greenwichDate = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+    private static final ThreadLocal<SimpleDateFormat> DF = new ThreadLocal<SimpleDateFormat>() {
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+        }
+    };
     /*
     private static final char[] Ok200String = "HTTP/1.1 200 OK\r\n".toCharArray();
     private static final char[] contentHTML= "Content-Type: text/html; charset=utf-8\r\n".toCharArray();
@@ -78,7 +83,7 @@ public class DefaultServlet extends HttpServlet {
             }
             //printWriter.write(keepAlive);
             //printWriter.write(date);
-            resp.setHeader(date,greenwichDate.format(cal.getTime())+endOfHeader);
+            resp.setHeader(date,DF.get().format(cal.getTime())+endOfHeader);
             //printWriter.write(greenwichDate.format(cal.getTime()).toCharArray());
             //printWriter.write(endOfHeader);
             resp.setHeader(ContentLength,size+"\r\n");
